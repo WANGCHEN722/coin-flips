@@ -31,7 +31,7 @@ async def welcome() -> str:
     return "Hello, this is the backend!"
 
 
-@app.get("/flip")
+@app.post("/flip")
 async def coin_flip(id: str) -> Literal["head", "tail"]:
     prob = Random(id).random()
 
