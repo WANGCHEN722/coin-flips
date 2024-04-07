@@ -4,6 +4,7 @@ from random import Random, randint
 from typing import Literal
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from google.api_core.exceptions import NotFound
 from google.cloud import firestore
 from httpx import AsyncClient
@@ -24,6 +25,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
+app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"])
 
 
 @app.get("/")
@@ -33,7 +35,7 @@ async def welcome() -> str:
 
 @app.post("/flip")
 async def coin_flip(id: str) -> Literal["head", "tail"]:
-    prob = Random(id).random()
+    prob = Random(id).betavariate(1.5, 1.5)
 
     if not len(random_buffer):
         response = await client.post(
@@ -85,3 +87,8 @@ async def count_flips(id: str) -> groupAggregateFlips:
         tail_total += doc.get("count")
 
     return {"heads": head_total, "tails": tail_total}
+
+
+@app.get("/groups")
+async def list_groups() -> list[str]:
+    return [doc.id async for doc in groups.list_documents()]
