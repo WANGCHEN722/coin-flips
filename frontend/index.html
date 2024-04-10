@@ -75,19 +75,11 @@
     </table>
   </template>
 
-  <template id="tableRow">
-    <tr>
-      <th scope="row"></th>
-      <td></td>
-      <td></td>
-    </tr>
-  </template>
-
-
   <script>
     var groupId
     var ctx
-    const url = "https://scisocstats-2rvp2df66q-as.a.run.app/"
+    var events
+    const url = "http://127.0.0.1:8000/"
 
 
     function drawCoin() {
@@ -109,6 +101,24 @@
       ctx.fillText("$", 0, 0)
     }
 
+    function make_row(group, heads, tails) {
+      let new_row = document.createElement("tr")
+      let entry = document.createElement("td")
+      entry.setAttribute("id", group)
+      entry.innerHTML = group
+      new_row.appendChild(entry)
+      entry = document.createElement("td")
+      entry.setAttribute("id", group + "head")
+      entry.innerHTML = heads
+      new_row.appendChild(entry)
+      entry = document.createElement("td")
+      entry.setAttribute("id", group + "tail")
+      entry.innerHTML = tails
+      new_row.appendChild(entry)
+
+      return new_row
+    }
+
     function login() {
       let name = document.getElementById("groupNameInput").value
       if (name) {
@@ -123,8 +133,47 @@
         ctx = document.getElementById("coinAnim").getContext("2d")
         ctx.setTransform(1, 0, 0, 1, ctx.canvas.width / 2, ctx.canvas.height / 2)
         drawCoin()
-        populateTable()
-        setInterval(populateTable, 1000)
+
+        events = new EventSource(url + "stream")
+        events.addEventListener("sync", event => {
+          let data = JSON.parse(event.data)
+          let dat = document.getElementById("tableData")
+          dat.innerHTML = ''
+          let rows = []
+          let r
+          let set_self = false
+          for (const group in data) {
+            r = make_row(group, data[group].heads, data[group].tails)
+            if (group === groupId) {
+              set_self = true
+              dat.insertBefore(r, dat.childNodes[0])
+            } else {
+              dat.appendChild(r)
+            }
+          }
+          if (!set_self) {
+            r = make_row(groupId, 0, 0)
+            dat.insertBefore(r, dat.childNodes[0])
+          }
+        })
+        events.addEventListener("incr", event => {
+          let data = JSON.parse(event.data)
+          try {
+            let entry = document.getElementById(data[0] + data[1])
+            entry.innerHTML = parseInt(entry.innerHTML) + 1
+          } catch (error) {
+            console.log(error)
+            let head = 0
+            let tail = 0
+            if (data[1] === "head") {
+              head = 1
+            } else {
+              tail = 1
+            }
+            let row = make_row(data[0], head, tail)
+            document.getElementById("tableData").appendChild(row)
+          }
+        })
       } else {
         document.getElementById("groupReminder").innerHTML = "Please enter a group name"
       }
@@ -181,35 +230,6 @@
       } else {
         start = undefined
       }
-    }
-
-    async function populateTable() {
-      let data = document.getElementById("tableData")
-      let clone, row
-      let children = [];
-
-      for (group of await fetch(url + "groups").then(response => response.json())) {
-        if (group != groupId) {
-          children.push(await getrow(group))
-        }
-      }
-
-      let first_row = await getrow(groupId)
-      data.innerHTML = ''
-      data.appendChild(first_row)
-      children.forEach(child => { data.appendChild(child) })
-
-
-    }
-
-    async function getrow(id) {
-      let clone = document.getElementById("tableRow").content.cloneNode(true)
-      let row = clone.childNodes[1]
-      row.childNodes[1].innerHTML = id
-      let nums = await fetch(url + "count?id=" + id).then(response => response.json())
-      row.childNodes[3].innerHTML = nums.heads
-      row.childNodes[5].innerHTML = nums.tails
-      return clone
     }
   </script>
 </body>

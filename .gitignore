@@ -2,3 +2,4 @@
 /backend/.venv/
 deploy/
 .firebase/
+firebase-debug.log
