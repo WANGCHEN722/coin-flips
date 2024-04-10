@@ -35,7 +35,7 @@ async def welcome() -> str:
 
 @app.post("/flip")
 async def coin_flip(id: str) -> Literal["head", "tail"]:
-    prob = Random(id).betavariate(1.5, 1.5)
+    prob = 0.3 * Random(id).random() + 0.35
 
     if not len(random_buffer):
         response = await client.post(

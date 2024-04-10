@@ -87,7 +87,7 @@
   <script>
     var groupId
     var ctx
-    const url = "http://127.0.0.1:8000/"
+    const url = "https://scisocstats-2rvp2df66q-as.a.run.app/"
 
 
     function drawCoin() {
@@ -150,7 +150,7 @@
         x = x * scale
         y = y * scale
         z = z * scale
-        force = Math.exp(generateNormal() + 2)
+        force = 15
         window.requestAnimationFrame(renderflip)
 
         await new Promise(r => setTimeout(r, 600))
