@@ -46,7 +46,7 @@ async def welcome() -> str:
 async def coin_flip(id: str) -> Literal["head", "tail"]:
     global WAIT_UNTIL
 
-    prob = 0.3 * Random(id).random() + 0.35
+    prob = Random(id).random() / 3 + 1 / 3
 
     if not len(random_buffer):
         async with REQUEST_LOCK:
