@@ -103,8 +103,9 @@
 
     function make_row(group, heads, tails) {
       let new_row = document.createElement("tr")
-      let entry = document.createElement("td")
+      let entry = document.createElement("th")
       entry.setAttribute("id", group)
+      entry.setAttribute("scope", "row")
       entry.innerHTML = group
       new_row.appendChild(entry)
       entry = document.createElement("td")
